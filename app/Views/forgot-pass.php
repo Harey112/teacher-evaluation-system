@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TES - Login</title>
-    <meta name="description" content="The small framework with powerful features">
+    <title>TES - Forgot Password</title>
+    <meta name="description" content="Reset your password for the Teacher Evaluation System">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" type="image/png" href="<?php echo base_url('/favicon.ico'); ?>">
+    <link rel="shortcut icon" type="image/png" href="/favicon.ico">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
         * {
@@ -25,7 +24,7 @@
             align-items: center;
         }
 
-        .login_container {
+        .forgot_password_container {
             width: 450px;
             height: 450px;
             background-color: white;
@@ -42,7 +41,7 @@
             width: 98%;
         }
 
-        #login_form {
+        #forgot_password_form {
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -58,7 +57,7 @@
             padding-left: 5px;
         }
 
-        #login_actions_div {
+        #form_actions_div {
             width: 100%;
             display: flex;
             justify-content: space-between;
@@ -83,22 +82,19 @@
 </head>
 <body>
     <div class="container">
-        <div class="login_container">
+        <div class="forgot_password_container">
             <h2>Teacher Evaluation System</h2>
-            <p style="width: 97%;">STUDENT LOGIN</p>
+            <p style="width: 97%;">FORGOT PASSWORD</p>
             <div class="line_divider" style="margin-top: -25px"></div>
-            <form id="login_form">
+            <form id="forgot_password_form">
                 <label for="email">Email:</label>
                 <input type="email" name="email" id="email" required>
-                <label for="password">Password:</label>
-                <input type="password" name="password" id="password" required>
-                <small id="error_message" style="color: red;"></small>
-                <div id="login_actions_div">
-                    <a href="<?php echo base_url('forgot-password'); ?>">Forgot Password?</a>
-                    <button type="submit">Login</button>
+                <small id="message" style="color: red;"></small>
+                <div id="form_actions_div">
+                    <a href="/student/login">Back to Login</a>
+                    <button type="submit">Submit</button>
                 </div>
             </form>
-            <a href="<?php echo base_url('student/signup'); ?>">I don't have account yet.</a>
             <div>
                 <h4>BOHOL ISLAND STATE UNIVERSITY</h4>
                 <p>Clarin Campus</p>
@@ -107,24 +103,16 @@
     </div>
 
     <script>
-        const password = document.getElementById('password');
-        password.addEventListener('input', function () {
-            document.getElementById('error_message').innerText = '';
-        });
-
-        const form = document.getElementById('login_form');
+        const form = document.getElementById('forgot_password_form');
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('message');
 
-            const data = {
-                email: email,
-                password: password
-            };
+            const data = { email: email };
 
-            fetch('<?php echo base_url('auth/admin-login'); ?>', {
+            fetch('/auth/forgot-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,14 +122,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    window.location.href = '<?php echo base_url('student/dashboard'); ?>';
+                    messageElement.style.color = 'green';
+                    messageElement.innerText = 'Password reset link sent to your email.';
                 } else {
-                    document.getElementById('error_message').innerText = data.message;
+                    messageElement.style.color = 'red';
+                    messageElement.innerText = data.message || 'An error occurred.';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again later.');
+                messageElement.style.color = 'red';
+                messageElement.innerText = 'An error occurred. Please try again later.';
             });
         });
     </script>

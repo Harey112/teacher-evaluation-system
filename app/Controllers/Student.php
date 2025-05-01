@@ -21,9 +21,10 @@ class Student extends BaseController
             'lastname' => $user['lastname'],
             'id' => $user['user_id'],
             'extension' => $user['extension'],
-            'email' => $user['email'],
+            'active_menu' => "dashboard",
+            'content' => view('student/dashboard')
         ];
-        return view('student/dashboard', $data);
+        return view('student/layout', $data);
     }
 
 

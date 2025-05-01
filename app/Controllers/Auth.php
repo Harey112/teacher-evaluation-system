@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\AdminModel;
+use App\Models\SectionModel;
+
 
 class Auth extends BaseController
 {
@@ -23,12 +26,18 @@ class Auth extends BaseController
         return view('login');
     }
 
+
     public function signup(){
 
         if (session()->get('isLoggedIn')) {
             return redirect()->to(base_url());
         }    
-        return view('signup');
+
+        $sectionModel = new SectionModel();
+
+        $sections = $sectionModel->findAll();
+
+        return view('signup', ['course_list' => $sections]);
     }
 
 
@@ -48,17 +57,48 @@ class Auth extends BaseController
     }
 
 
+    public function adminLogin(){
+
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to(base_url());
+        }
+
+        return view('admin-login');
+    }
+
+    public function loginAdmin(){
+
+        $username = $this->request->getVar('username');
+        $password = $this->request->getVar('password');
+        $adminModel = new AdminModel();
+        $admin = $adminModel->first();
+
+        if ($admin && ($username === $admin['username']) && ($password === $admin['password'])) {
+            //Session data
+            $data = [
+                'user_id' => "Admin",
+                'type' => 'admin',
+                'isLoggedIn' => true 
+            ];
+            $this->setUserSession($data);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Login successful']);
+        } else {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid credentials']);
+        }
+    }
+
+
     public function registerStudent(){
         $userModel = new UserModel();
 
         $newData = [
             'user_id' => $this->request->getVar('user_id'),
-            'email' => $this->request->getVar('email'),
             'password' => $this->request->getVar('password'),
             'firstname' => $this->request->getVar('firstname'),
             'middlename' => $this->request->getVar('middlename'),
             'lastname' => $this->request->getVar('lastname'),
             'extension' => $this->request->getVar('extension'),
+            'section' => $this->request->getVar('section'),
             'type' => 'student'
         ];
 
@@ -73,11 +113,6 @@ class Auth extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'User ID already exists.']);
         }
 
-        // Check if email already exists
-        $existingUserByEmail = $userModel->where('email', $newData['email'])->first();
-        if ($existingUserByEmail) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Email already exists.']);
-        }
 
         // Attempt to save the new user data
         if (!$userModel->save($newData)) {
@@ -86,12 +121,6 @@ class Auth extends BaseController
         } else {
             // If saving is successful, return success response
 
-            //Session data
-            $data = [
-                'id' => base64_encode($this->request->getVar('user_id')),
-                'type' => 'student',
-                'isLoggedIn' => true 
-            ];
             $this->setUserSession($newData);
             return $this->response->setJSON(['status' => 'success', 'message' => 'Registration successful.']);
         }
@@ -121,7 +150,7 @@ class Auth extends BaseController
             session()->remove('isLoggedIn');
             session()->destroy();
 
-            return redirect()->to(base_url('login'));
+            return redirect()->to(base_url());
         }    
 
 }
